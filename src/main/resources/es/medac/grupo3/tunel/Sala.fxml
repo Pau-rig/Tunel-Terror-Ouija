@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<StackPane fx:id="raiz" styleClass="raiz" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="es.medac.grupo3.tunel.SalaController">
+    <VBox alignment="CENTER" spacing="30">
+        <Label text="La ouija despierta" styleClass="titulo"/>
+        <Label fx:id="lblMensaje" styleClass="texto"/>
+        <GridPane fx:id="tablero" alignment="CENTER" hgap="10" vgap="10" styleClass="tablero" maxWidth="-Infinity"/>
+    </VBox>
+    <!-- Capa transparente por la que se mueve la plancheta -->
+    <Pane fx:id="capa" mouseTransparent="true">
+        <Label fx:id="plancheta" text="◉" styleClass="plancheta"/>
+    </Pane>
+    <Label fx:id="lblLetra" styleClass="letra" visible="false"/>
+    <Label fx:id="lblAyuda" styleClass="ayuda" StackPane.alignment="BOTTOM_CENTER">
+        <StackPane.margin><Insets bottom="40"/></StackPane.margin>
+    </Label>
+</StackPane>
