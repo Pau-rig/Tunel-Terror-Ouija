@@ -161,28 +161,43 @@ public class SalaController {
     private void moverPlanchetaHacia(char letra) {
         Button b = botones.get(letra);
         if (b == null) return;
+
+        // Obtenemos el centro del botón respecto al contenedor 'capa'
         Bounds caja = b.localToScene(b.getBoundsInLocal());
-        Point2D centro = capa.sceneToLocal(caja.getCenterX(), caja.getCenterY());
+        Point2D centroBoton = capa.sceneToLocal(caja.getCenterX(), caja.getCenterY());
+
+        // Obtenemos el ancho y alto actuales de la plancheta
+        double ancho = plancheta.getLayoutBounds().getWidth();
+        double alto = plancheta.getLayoutBounds().getHeight();
 
         TranslateTransition paso = new TranslateTransition(Duration.millis(400), plancheta);
-        paso.setToX(centro.getX() - plancheta.getFitWidth() / 2);
-        paso.setToY(centro.getY() - plancheta.getFitHeight() / 2);
+        // Posicionamos restando exactamente la mitad del ancho y alto para que el centro de la imagen encaje
+        paso.setToX(centroBoton.getX() - (ancho / 2.0));
+        paso.setToY(centroBoton.getY() - (alto / 2.0));
         paso.play();
     }
 
     private void moverPlanchetaTexto(String palabra, Runnable onFinish) {
         if (recorrido != null) recorrido.stop();
         recorrido = new SequentialTransition();
+
+        double ancho = plancheta.getLayoutBounds().getWidth();
+        double alto = plancheta.getLayoutBounds().getHeight();
+
         for (char letra : palabra.toCharArray()) {
             Button b = botones.get(letra);
             if (b == null) continue;
+
             Bounds caja = b.localToScene(b.getBoundsInLocal());
-            Point2D centro = capa.sceneToLocal(caja.getCenterX(), caja.getCenterY());
+            Point2D centroBoton = capa.sceneToLocal(caja.getCenterX(), caja.getCenterY());
+
             TranslateTransition paso = new TranslateTransition(Duration.millis(600), plancheta);
-            paso.setToX(centro.getX() - plancheta.getFitWidth() / 2);
-            paso.setToY(centro.getY() - plancheta.getFitHeight() / 2);
+            paso.setToX(centroBoton.getX() - (ancho / 2.0));
+            paso.setToY(centroBoton.getY() - (alto / 2.0));
+
             recorrido.getChildren().addAll(paso, new PauseTransition(Duration.millis(150)));
         }
+
         if (onFinish != null) {
             recorrido.setOnFinished(e -> onFinish.run());
         }
