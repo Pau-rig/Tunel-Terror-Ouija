@@ -77,3 +77,8 @@
 .resplandor-llama {
     -fx-fill: radial-gradient(center 50% 50%, radius 50%, rgba(255,170,0,0.4), transparent);
 }
+
+/* --- Estilo Jumpscare --- */
+.pane-jumpscare {
+    -fx-background-color: black;
+}

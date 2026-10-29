@@ -15,8 +15,7 @@ import javafx.util.Duration;
 
 public class SalaController {
 
-    private static final String LETRA = "M";
-    private static final String PISTA = "ALMA";   // palabra acordada con 1.º (solo letras del tablero)
+    private static final String PISTA = "ALMA";
     private static final String LETRAS = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ";
 
     @FXML private GridPane tablero;
@@ -25,60 +24,126 @@ public class SalaController {
     @FXML private Polygon llamaIzq, llamaDer;
     @FXML private Circle resplandorIzq, resplandorDer;
     @FXML private ImageView imgHumo1, imgHumo2;
+    @FXML private StackPane paneJumpscare;
+    @FXML private ImageView imgJumpscare;
 
     private final Map<Character, Button> botones = new HashMap<>();
-    private int posicion;                  // cuantas letras de la pista llevan acertadas
-    private SequentialTransition recorrido;  // movimiento actual de la plancheta
+    private int faseActual = 0; // 0: Letra A, 1: Letra L, 2: Letra M, 3: Letra A final
+    private int indiceLetraRespuesta = 0;
+
+    private SequentialTransition recorrido;
     private MediaPlayer ambiente;
+
     private final PauseTransition piedad = new PauseTransition(Duration.seconds(60));
-    private final PauseTransition autoReinicio = new PauseTransition(Duration.seconds(12));
+    private final PauseTransition autoReinicio = new PauseTransition(Duration.seconds(15));
+    private final PauseTransition temporizadorPista = new PauseTransition(Duration.seconds(7));
+
+    private final List<Acertijo> ACERTIJOS = Arrays.asList(
+            new Acertijo("ATAUD", "Fase 1: Los espíritus guardan silencio... Donde descansa Dracula."),
+            new Acertijo("LAPIDA", "Fase 2: El aire se enfría... Que hay muchas en un cementerio."),
+            new Acertijo("MALDICION", "Fase 3: Las velas parpadean... Hechizo de bruja que trae mala suerte."),
+            new Acertijo("ARAÑA", "Fase 4 (Última): El tablero tiembla... Animal con 8 patas.")
+    );
+
+    private static class Acertijo {
+        String palabraRespuesta;
+        String pistaOrientativa;
+
+        public Acertijo(String palabraRespuesta, String pistaOrientativa) {
+            this.palabraRespuesta = palabraRespuesta;
+            this.pistaOrientativa = pistaOrientativa;
+        }
+    }
 
     @FXML
     private void initialize() {
         crearTablero();
         iniciarAnimacionVelas();
         iniciarAnimacionHumo();
+
         ambiente = new MediaPlayer(new Media(recurso("sonidos/ambiente.mp3")));
         ambiente.setCycleCount(MediaPlayer.INDEFINITE);
         ambiente.setVolume(0.4);
         ambiente.play();
-        piedad.setOnFinished(e -> mostrarAyuda());
+
+        piedad.setOnFinished(e -> mostrarAyudaExtra());
         autoReinicio.setOnFinished(e -> reiniciar());
+
+        temporizadorPista.setOnFinished(e -> {
+            if (faseActual < ACERTIJOS.size()) {
+                lblMensaje.setText(ACERTIJOS.get(faseActual).pistaOrientativa);
+            }
+        });
+
         reiniciar();
     }
 
-    // Crea los 27 botones del tablero en 3 filas de 9
     private void crearTablero() {
         for (int i = 0; i < LETRAS.length(); i++) {
             char letra = LETRAS.charAt(i);
             Button b = new Button(String.valueOf(letra));
             b.getStyleClass().add("letra-ouija");
-            b.setOnAction(e -> pulsar(letra));
+            b.setOnAction(e -> pulsarLetraTablero(letra));
             botones.put(letra, b);
             tablero.add(b, i % 9, i / 9);
         }
     }
 
-    private void pulsar(char letra) {
-        if (lblLetra.isVisible()) return;
-        if (letra == PISTA.charAt(posicion)) {
-            if (!botones.get(letra).getStyleClass().contains("encendida")) botones.get(letra).getStyleClass().add("encendida");
-            moverPlancheta(String.valueOf(letra));
-            posicion++;
-            if (posicion == PISTA.length()) {
-                lblMensaje.setText("Los espíritus os responden...");
-                mostrarLetra();
+    private void pulsarLetraTablero(char letra) {
+        if (paneJumpscare.isVisible()) return;
+        temporizadorPista.stop();
+
+        Acertijo acertijoActual = ACERTIJOS.get(faseActual);
+        char letraEsperada = acertijoActual.palabraRespuesta.charAt(indiceLetraRespuesta);
+
+        if (letra == letraEsperada) {
+            moverPlanchetaHacia(letra);
+            indiceLetraRespuesta++;
+
+            if (indiceLetraRespuesta == acertijoActual.palabraRespuesta.length()) {
+                lblMensaje.setText("¡Correcto! Los espíritus revelan una parte de la palabra...");
+
+                char letraAlma = PISTA.charAt(faseActual);
+                Button btnAlma = botones.get(letraAlma);
+                if (btnAlma != null && !btnAlma.getStyleClass().contains("encendida")) {
+                    btnAlma.getStyleClass().add("encendida");
+                }
+
+                faseActual++;
+                indiceLetraRespuesta = 0;
+
+                if (faseActual < ACERTIJOS.size()) {
+                    PauseTransition siguiente = new PauseTransition(Duration.seconds(2));
+                    siguiente.setOnFinished(e -> lblMensaje.setText(ACERTIJOS.get(faseActual).pistaOrientativa));
+                    siguiente.play();
+                    piedad.playFromStart();
+                } else {
+                    // ¡Completó los 4 acertijos y la palabra ALMA! Mostramos la imagen de la M con acierto.wav
+                    mostrarImagenFinalAlma();
+                }
             }
         } else {
             efecto("fallo.wav");
-            lblMensaje.setText("¡NO! Empezad de nuevo...");
-            apagarLetras();
+            lblMensaje.setText("¡NO! Letra incorrecta. Empezad de nuevo este acertijo...");
             temblar(tablero);
+            indiceLetraRespuesta = 0;
+            temporizadorPista.playFromStart();
         }
     }
 
-    // Mueve la plancheta letra a letra por la palabra indicada
-    private void moverPlancheta(String palabra) {
+    private void moverPlanchetaHacia(char letra) {
+        Button b = botones.get(letra);
+        if (b == null) return;
+        Bounds caja = b.localToScene(b.getBoundsInLocal());
+        Point2D centro = capa.sceneToLocal(caja.getCenterX(), caja.getCenterY());
+
+        TranslateTransition paso = new TranslateTransition(Duration.millis(400), plancheta);
+        paso.setToX(centro.getX() - plancheta.getWidth() / 2);
+        paso.setToY(centro.getY() - plancheta.getHeight() / 2);
+        paso.play();
+    }
+
+    private void moverPlanchetaTexto(String palabra, Runnable onFinish) {
         if (recorrido != null) recorrido.stop();
         recorrido = new SequentialTransition();
         for (char letra : palabra.toCharArray()) {
@@ -86,50 +151,66 @@ public class SalaController {
             if (b == null) continue;
             Bounds caja = b.localToScene(b.getBoundsInLocal());
             Point2D centro = capa.sceneToLocal(caja.getCenterX(), caja.getCenterY());
-            TranslateTransition paso = new TranslateTransition(Duration.millis(900), plancheta);
+            TranslateTransition paso = new TranslateTransition(Duration.millis(600), plancheta);
             paso.setToX(centro.getX() - plancheta.getWidth() / 2);
             paso.setToY(centro.getY() - plancheta.getHeight() / 2);
-            recorrido.getChildren().addAll(paso, new PauseTransition(Duration.millis(300)));
+            recorrido.getChildren().addAll(paso, new PauseTransition(Duration.millis(150)));
+        }
+        if (onFinish != null) {
+            recorrido.setOnFinished(e -> onFinish.run());
         }
         recorrido.play();
     }
 
     private void apagarLetras() {
-        posicion = 0;
+        faseActual = 0;
+        indiceLetraRespuesta = 0;
         botones.values().forEach(b -> b.getStyleClass().removeAll("encendida"));
     }
 
     public void reiniciar() {
         autoReinicio.stop();
+        temporizadorPista.stop();
         apagarLetras();
+        paneJumpscare.setVisible(false);
         lblLetra.setVisible(false);
         lblAyuda.setText("");
-        lblMensaje.setText("Pulsad las letras que os han susurrado...");
-        // Esperamos 1 s a que la ventana se dibuje y la plancheta saluda
+        lblMensaje.setText(ACERTIJOS.get(0).pistaOrientativa);
+
         PauseTransition intro = new PauseTransition(Duration.seconds(1));
-        intro.setOnFinished(e -> moverPlancheta("HOLA"));
+        intro.setOnFinished(e -> moverPlanchetaTexto("HOLA", null));
         intro.play();
         piedad.playFromStart();
     }
 
-    private void mostrarAyuda() {
-        lblAyuda.setText("La ouija se apiada de vosotros y os señala el camino...");
-        moverPlancheta(PISTA.substring(posicion));
+    private void mostrarAyudaExtra() {
+        lblAyuda.setText("La ouija se apiada y os da una pista extra en la mente...");
     }
 
-    // ---------- Comun a todas las salas ----------
-    private void mostrarLetra() {
+    private void mostrarImagenFinalAlma() {
         piedad.stop();
-        lblLetra.setText(LETRA);
-        lblLetra.setVisible(true);
-        ScaleTransition escala = new ScaleTransition(Duration.millis(700), lblLetra);
-        escala.setFromX(0.1); escala.setFromY(0.1);
-        escala.setToX(1); escala.setToY(1);
-        FadeTransition aparicion = new FadeTransition(Duration.millis(700), lblLetra);
-        aparicion.setFromValue(0); aparicion.setToValue(1);
-        new ParallelTransition(escala, aparicion).play();
+        temporizadorPista.stop();
+        lblMensaje.setText("¡La palabra ALMA se ha completado!");
+
+        // Reproduce el sonido de acierto requerido
         efecto("acierto.wav");
-        autoReinicio.playFromStart();   // la sala se reinicia sola para el siguiente grupo
+
+        try {
+            // Carga la imagen creada desde la carpeta img (por ejemplo sustos.png)
+            imgJumpscare.setImage(new Image(recurso("img/jumpscare.jpg")));
+        } catch (Exception e) {
+            System.err.println("No se pudo cargar la imagen final desde la carpeta img.");
+        }
+
+        paneJumpscare.setVisible(true);
+
+        // Transición elegante o de impacto al mostrar la imagen
+        ScaleTransition st = new ScaleTransition(Duration.millis(300), paneJumpscare);
+        st.setFromX(0.5); st.setFromY(0.5);
+        st.setToX(1.0); st.setToY(1.0);
+        st.play();
+
+        autoReinicio.playFromStart(); // Se reinicia solo tras unos segundos para el siguiente grupo
     }
 
     private void temblar(Node nodo) {
@@ -145,12 +226,11 @@ public class SalaController {
     }
 
     private String recurso(String ruta) {
-        // Si sale NullPointerException aqui: el archivo no esta en resources o el nombre no coincide
         return getClass().getResource(ruta).toExternalForm();
     }
 
     public void detener() {
-        ambiente.stop();
+        if (ambiente != null) ambiente.stop();
     }
 
     private void iniciarAnimacionVelas() {
@@ -179,14 +259,12 @@ public class SalaController {
             imgHumo2.setImage(textura);
 
             TranslateTransition trans1 = new TranslateTransition(Duration.seconds(35), imgHumo1);
-            trans1.setFromX(0);
-            trans1.setToX(-1920);
+            trans1.setFromX(0); trans1.setToX(-1920);
             trans1.setInterpolator(Interpolator.LINEAR);
             trans1.setCycleCount(Animation.INDEFINITE);
 
             TranslateTransition trans2 = new TranslateTransition(Duration.seconds(35), imgHumo2);
-            trans2.setFromX(0);
-            trans2.setToX(-1920);
+            trans2.setFromX(0); trans2.setToX(-1920);
             trans2.setInterpolator(Interpolator.LINEAR);
             trans2.setCycleCount(Animation.INDEFINITE);
 

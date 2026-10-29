@@ -13,9 +13,10 @@
         <ImageView fx:id="imgHumo2" fitHeight="1080" fitWidth="1920" preserveRatio="false" layoutX="1920"/>
     </Pane>
 
-    <VBox alignment="CENTER" spacing="30">
+    <VBox alignment="CENTER" spacing="25">
         <Label text="La ouija despierta" styleClass="titulo"/>
-        <Label fx:id="lblMensaje" styleClass="texto"/>
+        <Label fx:id="lblMensaje" styleClass="texto" textAlignment="CENTER" wrapText="true" maxWidth="900"/>
+
         <HBox alignment="CENTER" spacing="40">
             <!-- Vela Izquierda -->
             <VBox alignment="BOTTOM_CENTER" prefHeight="220" prefWidth="60">
@@ -26,7 +27,7 @@
                 <Rectangle width="30" height="120" styleClass="cuerpo-vela"/>
             </VBox>
 
-            <!-- Tu tablero original queda aquí en el centro -->
+            <!-- Tablero Central -->
             <GridPane fx:id="tablero" alignment="CENTER" hgap="10" vgap="10" styleClass="tablero" maxWidth="-Infinity"/>
 
             <!-- Vela Derecha -->
@@ -39,6 +40,7 @@
             </VBox>
         </HBox>
     </VBox>
+
     <!-- Capa transparente por la que se mueve la plancheta -->
     <Pane fx:id="capa" mouseTransparent="true">
         <Label fx:id="plancheta" text="◉" styleClass="plancheta"/>
@@ -47,4 +49,9 @@
     <Label fx:id="lblAyuda" styleClass="ayuda" StackPane.alignment="BOTTOM_CENTER">
         <StackPane.margin><Insets bottom="40"/></StackPane.margin>
     </Label>
+
+    <!-- Panel de Jumpscare (Oculto al inicio) -->
+    <StackPane fx:id="paneJumpscare" visible="false" styleClass="pane-jumpscare">
+        <ImageView fx:id="imgJumpscare" fitHeight="1080" fitWidth="1920" preserveRatio="true"/>
+    </StackPane>
 </StackPane>
