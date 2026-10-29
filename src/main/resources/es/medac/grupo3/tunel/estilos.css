@@ -1,0 +1,63 @@
+.raiz {
+    -fx-background-color: radial-gradient(center 50% 50%, radius 75%, #2a0000, #000000);
+}
+.titulo {
+    -fx-font-family: "Creepster";
+    -fx-font-size: 72px;
+    -fx-text-fill: #ff7518;
+    -fx-effect: dropshadow(gaussian, #ff0000, 20, 0.3, 0, 0);
+}
+.texto {
+    -fx-font-size: 24px;
+    -fx-text-fill: #d9d9d9;
+}
+.letra {
+    -fx-font-family: "Creepster";
+    -fx-font-size: 280px;
+    -fx-text-fill: #b30000;
+    -fx-effect: dropshadow(gaussian, #ff0000, 40, 0.5, 0, 0);
+}
+.ayuda {
+    -fx-font-size: 22px;
+    -fx-text-fill: #8fbc8f;
+    -fx-font-style: italic;
+}
+.button {
+    -fx-background-color: #1a1a1a;
+    -fx-text-fill: #ff7518;
+    -fx-border-color: #ff7518;
+    -fx-font-size: 24px;
+    -fx-cursor: hand;
+}
+.button:hover {
+    -fx-background-color: #330000;
+}
+.text-field {
+    -fx-background-color: #111111;
+    -fx-text-fill: white;
+    -fx-font-size: 28px;
+    -fx-border-color: #550000;
+    -fx-alignment: center;
+}
+.tablero {
+    -fx-background-color: linear-gradient(#4a3420, #2b1d10);
+    -fx-background-radius: 40;
+    -fx-padding: 30;
+    -fx-effect: dropshadow(gaussian, black, 30, 0.5, 0, 0);
+}
+.letra-ouija {
+    -fx-font-family: "Creepster";
+    -fx-font-size: 40px;
+    -fx-min-width: 80px;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: #e8d5a3;
+}
+.letra-ouija.encendida {
+    -fx-text-fill: #ff2a2a;
+    -fx-effect: dropshadow(gaussian, #ff0000, 25, 0.6, 0, 0);
+}
+.plancheta {
+    -fx-font-size: 90px;
+    -fx-text-fill: rgba(255, 240, 200, 0.75);
+}

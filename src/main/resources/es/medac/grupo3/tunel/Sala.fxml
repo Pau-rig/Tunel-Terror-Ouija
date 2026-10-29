@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<StackPane fx:id="raiz" styleClass="raiz" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+<StackPane fx:id="raiz" styleClass="raiz" stylesheets="@estilos.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="es.medac.grupo3.tunel.SalaController">
     <VBox alignment="CENTER" spacing="30">
         <Label text="La ouija despierta" styleClass="titulo"/>
