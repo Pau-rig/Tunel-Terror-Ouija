@@ -53,6 +53,6 @@
 
     <!-- Panel de Jumpscare (Oculto al inicio) -->
     <StackPane fx:id="paneJumpscare" visible="false" styleClass="pane-jumpscare">
-        <ImageView fx:id="imgJumpscare" fitHeight="1080" fitWidth="1920" preserveRatio="true"/>
+        <ImageView fx:id="imgJumpscare" preserveRatio="true" smooth="true" fitHeight="${raiz.height}" fitWidth="${raiz.width}"/>
     </StackPane>
 </StackPane>
