@@ -41,10 +41,11 @@
         </HBox>
     </VBox>
 
-    <!-- Capa transparente por la que se mueve la plancheta -->
+    <!-- Capa transparente por la que se mueve la plancheta (ImageView de la aguja) -->
     <Pane fx:id="capa" mouseTransparent="true">
-        <Label fx:id="plancheta" text="◉" styleClass="plancheta"/>
+        <ImageView fx:id="plancheta" styleClass="plancheta" fitWidth="90" fitHeight="120" preserveRatio="true"/>
     </Pane>
+
     <Label fx:id="lblLetra" styleClass="letra" visible="false"/>
     <Label fx:id="lblAyuda" styleClass="ayuda" StackPane.alignment="BOTTOM_CENTER">
         <StackPane.margin><Insets bottom="40"/></StackPane.margin>

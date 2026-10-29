@@ -20,7 +20,8 @@ public class SalaController {
 
     @FXML private GridPane tablero;
     @FXML private Pane capa;
-    @FXML private Label plancheta, lblMensaje, lblLetra, lblAyuda;
+    @FXML private ImageView plancheta;
+    @FXML private Label lblMensaje, lblLetra, lblAyuda;
     @FXML private Polygon llamaIzq, llamaDer;
     @FXML private Circle resplandorIzq, resplandorDer;
     @FXML private ImageView imgHumo1, imgHumo2;
@@ -30,6 +31,7 @@ public class SalaController {
     private final Map<Character, Button> botones = new HashMap<>();
     private int faseActual = 0; // 0: Letra A, 1: Letra L, 2: Letra M, 3: Letra A final
     private int indiceLetraRespuesta = 0;
+    private int erroresConsecutivos = 0; // Contador de errores en el acertijo actual
 
     private SequentialTransition recorrido;
     private MediaPlayer ambiente;
@@ -60,6 +62,13 @@ public class SalaController {
         crearTablero();
         iniciarAnimacionVelas();
         iniciarAnimacionHumo();
+
+        // Cargar la imagen de la plancheta de madera (aguja.png)
+        try {
+            plancheta.setImage(new Image(recurso("img/aguja.png")));
+        } catch (Exception e) {
+            System.err.println("No se pudo cargar la imagen aguja.png desde la carpeta img.");
+        }
 
         ambiente = new MediaPlayer(new Media(recurso("sonidos/ambiente.mp3")));
         ambiente.setCycleCount(MediaPlayer.INDEFINITE);
@@ -97,37 +106,55 @@ public class SalaController {
         char letraEsperada = acertijoActual.palabraRespuesta.charAt(indiceLetraRespuesta);
 
         if (letra == letraEsperada) {
+            erroresConsecutivos = 0;
             moverPlanchetaHacia(letra);
             indiceLetraRespuesta++;
 
             if (indiceLetraRespuesta == acertijoActual.palabraRespuesta.length()) {
-                lblMensaje.setText("¡Correcto! Los espíritus revelan una parte de la palabra...");
-
-                char letraAlma = PISTA.charAt(faseActual);
-                Button btnAlma = botones.get(letraAlma);
-                if (btnAlma != null && !btnAlma.getStyleClass().contains("encendida")) {
-                    btnAlma.getStyleClass().add("encendida");
-                }
-
-                faseActual++;
-                indiceLetraRespuesta = 0;
-
-                if (faseActual < ACERTIJOS.size()) {
-                    PauseTransition siguiente = new PauseTransition(Duration.seconds(2));
-                    siguiente.setOnFinished(e -> lblMensaje.setText(ACERTIJOS.get(faseActual).pistaOrientativa));
-                    siguiente.play();
-                    piedad.playFromStart();
-                } else {
-                    // ¡Completó los 4 acertijos y la palabra ALMA! Mostramos la imagen de la M con acierto.wav
-                    mostrarImagenFinalAlma();
-                }
+                completarFaseActual(acertijoActual);
             }
         } else {
+            erroresConsecutivos++;
             efecto("fallo.wav");
-            lblMensaje.setText("¡NO! Letra incorrecta. Empezad de nuevo este acertijo...");
             temblar(tablero);
-            indiceLetraRespuesta = 0;
-            temporizadorPista.playFromStart();
+
+            if (erroresConsecutivos >= 3) {
+                // ¡3 errores! Revelamos la respuesta entera por compasión de los espíritus
+                erroresConsecutivos = 0;
+                lblMensaje.setText("¡Tantos errores han enfocado a los espíritus! Os revelan la respuesta completa...");
+
+                // Mueve la plancheta deletreando la respuesta entera del acertijo
+                moverPlanchetaTexto(acertijoActual.palabraRespuesta, () -> {
+                    completarFaseActual(acertijoActual);
+                });
+            } else {
+                lblMensaje.setText("¡NO! Letra incorrecta (" + erroresConsecutivos + "/3 fallos). Empezad de nuevo este acertijo...");
+                indiceLetraRespuesta = 0;
+                temporizadorPista.playFromStart();
+            }
+        }
+    }
+
+    private void completarFaseActual(Acertijo acertijoActual) {
+        lblMensaje.setText("¡Correcto! Los espíritus revelan una parte de la palabra...");
+
+        char letraAlma = PISTA.charAt(faseActual);
+        Button btnAlma = botones.get(letraAlma);
+        if (btnAlma != null && !btnAlma.getStyleClass().contains("encendida")) {
+            btnAlma.getStyleClass().add("encendida");
+        }
+
+        faseActual++;
+        indiceLetraRespuesta = 0;
+        erroresConsecutivos = 0;
+
+        if (faseActual < ACERTIJOS.size()) {
+            PauseTransition siguiente = new PauseTransition(Duration.seconds(2));
+            siguiente.setOnFinished(e -> lblMensaje.setText(ACERTIJOS.get(faseActual).pistaOrientativa));
+            siguiente.play();
+            piedad.playFromStart();
+        } else {
+            mostrarImagenFinalAlma();
         }
     }
 
@@ -138,8 +165,8 @@ public class SalaController {
         Point2D centro = capa.sceneToLocal(caja.getCenterX(), caja.getCenterY());
 
         TranslateTransition paso = new TranslateTransition(Duration.millis(400), plancheta);
-        paso.setToX(centro.getX() - plancheta.getWidth() / 2);
-        paso.setToY(centro.getY() - plancheta.getHeight() / 2);
+        paso.setToX(centro.getX() - plancheta.getFitWidth() / 2);
+        paso.setToY(centro.getY() - plancheta.getFitHeight() / 2);
         paso.play();
     }
 
@@ -152,8 +179,8 @@ public class SalaController {
             Bounds caja = b.localToScene(b.getBoundsInLocal());
             Point2D centro = capa.sceneToLocal(caja.getCenterX(), caja.getCenterY());
             TranslateTransition paso = new TranslateTransition(Duration.millis(600), plancheta);
-            paso.setToX(centro.getX() - plancheta.getWidth() / 2);
-            paso.setToY(centro.getY() - plancheta.getHeight() / 2);
+            paso.setToX(centro.getX() - plancheta.getFitWidth() / 2);
+            paso.setToY(centro.getY() - plancheta.getFitHeight() / 2);
             recorrido.getChildren().addAll(paso, new PauseTransition(Duration.millis(150)));
         }
         if (onFinish != null) {
@@ -165,6 +192,7 @@ public class SalaController {
     private void apagarLetras() {
         faseActual = 0;
         indiceLetraRespuesta = 0;
+        erroresConsecutivos = 0;
         botones.values().forEach(b -> b.getStyleClass().removeAll("encendida"));
     }
 
@@ -192,11 +220,9 @@ public class SalaController {
         temporizadorPista.stop();
         lblMensaje.setText("¡La palabra ALMA se ha completado!");
 
-        // Reproduce el sonido de acierto requerido
         efecto("acierto.wav");
 
         try {
-            // Carga la imagen creada desde la carpeta img (por ejemplo sustos.png)
             imgJumpscare.setImage(new Image(recurso("img/jumpscare.jpg")));
         } catch (Exception e) {
             System.err.println("No se pudo cargar la imagen final desde la carpeta img.");
@@ -204,13 +230,12 @@ public class SalaController {
 
         paneJumpscare.setVisible(true);
 
-        // Transición elegante o de impacto al mostrar la imagen
         ScaleTransition st = new ScaleTransition(Duration.millis(300), paneJumpscare);
         st.setFromX(0.5); st.setFromY(0.5);
         st.setToX(1.0); st.setToY(1.0);
         st.play();
 
-        autoReinicio.playFromStart(); // Se reinicia solo tras unos segundos para el siguiente grupo
+        autoReinicio.playFromStart();
     }
 
     private void temblar(Node nodo) {

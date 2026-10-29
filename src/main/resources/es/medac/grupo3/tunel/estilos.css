@@ -82,3 +82,9 @@
 .pane-jumpscare {
     -fx-background-color: black;
 }
+.plancheta {
+    -fx-fit-width: 90px;
+    -fx-fit-height: 120px;
+    -fx-preserve-ratio: true;
+    -fx-effect: dropshadow(gaussian, black, 15, 0.6, 0, 5);
+}
