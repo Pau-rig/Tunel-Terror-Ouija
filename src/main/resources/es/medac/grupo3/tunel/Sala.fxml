@@ -2,13 +2,42 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.image.ImageView?>
 
 <StackPane fx:id="raiz" styleClass="raiz" stylesheets="@estilos.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="es.medac.grupo3.tunel.SalaController">
+    <!-- Capa de humo de fondo -->
+    <Pane fx:id="capaHumo" mouseTransparent="true" opacity="0.35">
+        <ImageView fx:id="imgHumo1" fitHeight="1080" fitWidth="1920" preserveRatio="false"/>
+        <ImageView fx:id="imgHumo2" fitHeight="1080" fitWidth="1920" preserveRatio="false" layoutX="1920"/>
+    </Pane>
+
     <VBox alignment="CENTER" spacing="30">
         <Label text="La ouija despierta" styleClass="titulo"/>
         <Label fx:id="lblMensaje" styleClass="texto"/>
-        <GridPane fx:id="tablero" alignment="CENTER" hgap="10" vgap="10" styleClass="tablero" maxWidth="-Infinity"/>
+        <HBox alignment="CENTER" spacing="40">
+            <!-- Vela Izquierda -->
+            <VBox alignment="BOTTOM_CENTER" prefHeight="220" prefWidth="60">
+                <StackPane>
+                    <Circle fx:id="resplandorIzq" radius="25" styleClass="resplandor-llama"/>
+                    <Polygon fx:id="llamaIzq" points="0.0,0.0, 10.0,-25.0, 20.0,0.0" styleClass="llama"/>
+                </StackPane>
+                <Rectangle width="30" height="120" styleClass="cuerpo-vela"/>
+            </VBox>
+
+            <!-- Tu tablero original queda aquí en el centro -->
+            <GridPane fx:id="tablero" alignment="CENTER" hgap="10" vgap="10" styleClass="tablero" maxWidth="-Infinity"/>
+
+            <!-- Vela Derecha -->
+            <VBox alignment="BOTTOM_CENTER" prefHeight="220" prefWidth="60">
+                <StackPane>
+                    <Circle fx:id="resplandorDer" radius="25" styleClass="resplandor-llama"/>
+                    <Polygon fx:id="llamaDer" points="0.0,0.0, 10.0,-25.0, 20.0,0.0" styleClass="llama"/>
+                </StackPane>
+                <Rectangle width="30" height="120" styleClass="cuerpo-vela"/>
+            </VBox>
+        </HBox>
     </VBox>
     <!-- Capa transparente por la que se mueve la plancheta -->
     <Pane fx:id="capa" mouseTransparent="true">

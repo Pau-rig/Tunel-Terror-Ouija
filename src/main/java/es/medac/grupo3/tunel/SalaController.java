@@ -6,6 +6,7 @@ import javafx.fxml.FXML;
 import javafx.geometry.*;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.media.*;
@@ -21,6 +22,9 @@ public class SalaController {
     @FXML private GridPane tablero;
     @FXML private Pane capa;
     @FXML private Label plancheta, lblMensaje, lblLetra, lblAyuda;
+    @FXML private Polygon llamaIzq, llamaDer;
+    @FXML private Circle resplandorIzq, resplandorDer;
+    @FXML private ImageView imgHumo1, imgHumo2;
 
     private final Map<Character, Button> botones = new HashMap<>();
     private int posicion;                  // cuantas letras de la pista llevan acertadas
@@ -32,6 +36,8 @@ public class SalaController {
     @FXML
     private void initialize() {
         crearTablero();
+        iniciarAnimacionVelas();
+        iniciarAnimacionHumo();
         ambiente = new MediaPlayer(new Media(recurso("sonidos/ambiente.mp3")));
         ambiente.setCycleCount(MediaPlayer.INDEFINITE);
         ambiente.setVolume(0.4);
@@ -145,5 +151,49 @@ public class SalaController {
 
     public void detener() {
         ambiente.stop();
+    }
+
+    private void iniciarAnimacionVelas() {
+        Random rnd = new Random();
+        Timeline parpadeo = new Timeline(new KeyFrame(Duration.millis(80), e -> {
+            double escalaY1 = 0.85 + rnd.nextDouble() * 0.3;
+            double escalaX1 = 0.9 + rnd.nextDouble() * 0.2;
+            llamaIzq.setScaleY(escalaY1);
+            llamaIzq.setScaleX(escalaX1);
+            resplandorIzq.setOpacity(0.6 + rnd.nextDouble() * 0.4);
+
+            double escalaY2 = 0.85 + rnd.nextDouble() * 0.3;
+            double escalaX2 = 0.9 + rnd.nextDouble() * 0.2;
+            llamaDer.setScaleY(escalaY2);
+            llamaDer.setScaleX(escalaX2);
+            resplandorDer.setOpacity(0.6 + rnd.nextDouble() * 0.4);
+        }));
+        parpadeo.setCycleCount(Animation.INDEFINITE);
+        parpadeo.play();
+    }
+
+    private void iniciarAnimacionHumo() {
+        try {
+            Image textura = new Image(recurso("img/humitoPiengi.png"));
+            imgHumo1.setImage(textura);
+            imgHumo2.setImage(textura);
+
+            TranslateTransition trans1 = new TranslateTransition(Duration.seconds(35), imgHumo1);
+            trans1.setFromX(0);
+            trans1.setToX(-1920);
+            trans1.setInterpolator(Interpolator.LINEAR);
+            trans1.setCycleCount(Animation.INDEFINITE);
+
+            TranslateTransition trans2 = new TranslateTransition(Duration.seconds(35), imgHumo2);
+            trans2.setFromX(0);
+            trans2.setToX(-1920);
+            trans2.setInterpolator(Interpolator.LINEAR);
+            trans2.setCycleCount(Animation.INDEFINITE);
+
+            trans1.play();
+            trans2.play();
+        } catch (Exception e) {
+            System.err.println("No se ha encontrado humitoPiengi.png en img/");
+        }
     }
 }

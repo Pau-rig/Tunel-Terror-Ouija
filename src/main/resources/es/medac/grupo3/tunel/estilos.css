@@ -61,3 +61,19 @@
     -fx-font-size: 90px;
     -fx-text-fill: rgba(255, 240, 200, 0.75);
 }
+
+/* --- Estilos de las velas --- */
+.cuerpo-vela {
+    -fx-fill: linear-gradient(to right, #2a221b, #4a3c30, #2a221b);
+    -fx-arc-width: 8;
+    -fx-arc-height: 8;
+}
+
+.llama {
+    -fx-fill: linear-gradient(to top, #ff3300, #ffaa00, #ffffaa);
+    -fx-effect: dropshadow(gaussian, #ff9900, 20, 0.7, 0, 0);
+}
+
+.resplandor-llama {
+    -fx-fill: radial-gradient(center 50% 50%, radius 50%, rgba(255,170,0,0.4), transparent);
+}
